@@ -41,6 +41,7 @@ async function run() {
     
     app.get('/toys', async(req,res)=>{
         const searchQuery = req.query.search;
+        const limit = 5;
         let query = {};
         let options ={};
 
@@ -57,15 +58,23 @@ async function run() {
             options={
                 projection :{
                     Category:1,
-                    subCategories:1
+                    subCategories:{$slice: limit}
+
                 }
             };
+        } else{
+            options ={
+                projection:{
+                    Category:1,
+                    subCategories:{$slice:limit}
+                }
+        };
         }
 
         const result = await toyCollection.find(query,options).toArray();
 
         res.send(result);
-    })
+    });
     app.get('/toys/:id', async(req,res)=>{
         const id = req.params.id;
         const query = {_id: new ObjectId(id)}
@@ -75,6 +84,7 @@ async function run() {
         const result = await toyCollection.findOne(query,options);
         res.send(result);
     })
+    
 
 
 
