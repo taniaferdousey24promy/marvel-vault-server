@@ -34,10 +34,24 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
 
+    
+    // await client.connect();
+
+    app.get('/toys',async(req,res)=>{
+        const cursor = toyCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      })
+  
 
     const toyCollection = client.db('marvelVault').collection('toys');
+    app.post('/toys', async(req,res) =>{
+        const newToy = req.body;
+        console.log(newToy);
+        const result= await toyCollection.insertOne(newToy);
+        res.send(result);
+    })
     
     app.get('/toys', async(req,res)=>{
         const searchQuery = req.query.search;
@@ -85,7 +99,7 @@ async function run() {
         res.send(result);
     })
     
-
+    
 
 
 
