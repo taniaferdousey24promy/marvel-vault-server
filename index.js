@@ -45,7 +45,22 @@ async function run() {
         let options ={};
 
 
-        
+        if(searchQuery){
+            query ={
+                'subCategories.name':{
+                    $regex: searchQuery,
+                    $options: 'i'
+                }
+
+
+            };
+            options={
+                projection :{
+                    Category:1,
+                    subCategories:1
+                }
+            };
+        }
 
         const result = await toyCollection.find(query,options).toArray();
 
