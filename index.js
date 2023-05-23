@@ -38,66 +38,117 @@ async function run() {
     
     // await client.connect();
 
-    app.get('/toys',async(req,res)=>{
-        const cursor = toyCollection.find();
-        const result = await cursor.toArray();
-        res.send(result);
-      })
+    // app.get('/toys',async(req,res)=>{
+    //     const cursor = toyCollection.find();
+    //     const result = await cursor.toArray();
+    //     res.send(result);
+    //   })
   
 
     const toyCollection = client.db('marvelVault').collection('toys');
-    app.post('/toys', async(req,res) =>{
+    const newToysCollection = client.db('marvelVault').collection('newToys');
+    app.get('/newToys',async(req,res)=>{
+        const cursor = newToysCollection.find();
+        const result = await cursor.toArray();
+        res.send(result);
+      })
+
+    app.post('/newToys', async(req,res) =>{
         const newToy = req.body;
         console.log(newToy);
-        const result= await toyCollection.insertOne(newToy);
+        const result= await newToysCollection.insertOne(newToy);
         res.send(result);
     })
     
     app.get('/toys', async(req,res)=>{
-        const searchQuery = req.query.search;
+        // const searchQuery = req.query.search;
         const limit = 5;
-        let query = {};
-        let options ={};
 
+        try{
+          const result = await toyCollection.find().limit(limit).toArray();
+          res.send(result);
 
-        if(searchQuery){
-            query ={
-                'subCategories.name':{
-                    $regex: searchQuery,
-                    $options: 'i'
-                }
-
-
-            };
-            options={
-                projection :{
-                    Category:1,
-                    subCategories:{$slice: limit}
-
-                }
-            };
-        } else{
-            options ={
-                projection:{
-                    Category:1,
-                    subCategories:{$slice:limit}
-                }
-        };
+        }catch(error){
+          console.error(error);
+          res.status(500).send('Internal Server Error');
         }
+ 
 
-        const result = await toyCollection.find(query,options).toArray();
 
-        res.send(result);
+        
+        // if(searchQuery){
+        //     query ={
+        //         'subCategories.name':{
+        //             $regex: searchQuery,
+        //             $options: 'i'
+        //         }
+
+
+        //     };
+        //     options={
+        //         projection :{
+        //             Category:1,
+        //             subCategories:{$slice: limit}
+
+        //         }
+        //     };
+        // } else{
+        //     options ={
+        //         projection:{
+        //             Category:1,
+        //             subCategories:{$slice:limit}
+        //         }
+        // };
+        // }
+
+        // const result = await toyCollection.find(query,options).toArray();
+
+        // res.send(result);
     });
     app.get('/toys/:id', async(req,res)=>{
         const id = req.params.id;
         const query = {_id: new ObjectId(id)}
         const options ={
-            projection:{Category:1, subCategories:1},
+            projection:{subCategoryName:1,picture:1,toyName:1, price:1,rating:1,description:1, sellerName:1, sellerEmail:1,availableQuantity:1},
         };
         const result = await toyCollection.findOne(query,options);
+        // const result = await toyCollection.findOne(query);
         res.send(result);
     })
+
+    // app.get('/toys/:id/subCategories',async(req,res)=>{
+    //   const id = req.params.id;
+    //   const query = {_id: new ObjectId(id)}
+    //   const options ={
+    //       projection:{subCategories:1},
+    //   };
+    //   const result = await toyCollection.findOne(query,options);
+    //   res.send(result);
+    // })
+    // app.get('/toys/:id/subCategories/:id', async (req, res) => {
+    //   const toyId = req.params.toyId;
+    //   const subCategoryId = req.params.subCategoryId;
+    
+    //   const query = { _id: new ObjectId(toyId) };
+    //   const options = { projection: { subCategories: 1 } };
+    
+    //   const toy = await toyCollection.findOne(query, options);
+    
+    //   if (!toy) {
+    //     res.status(404).send('Toy not found');
+    //     return;
+    //   }
+    
+    //   const subCategory = toy.subCategories.find(sub => sub.id === subCategoryId);
+    
+    //   if (!subCategory) {
+    //     res.status(404).send('Subcategory not found');
+    //     return;
+    //   }
+    
+    //   res.send(subCategory);
+    // });
+    
     
     
 
